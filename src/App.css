@@ -43,11 +43,12 @@
 
 /* Game Layout - The main content area */
 .game-layout {
-  display: flex;
-  flex: 1;
-  margin-top: 50px;
-  height: calc(100vh - 50px);
-  overflow: hidden;
+  display: grid;
+  grid-template-columns: 270px 1fr 180px;
+  gap: var(--spacing-md);
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
 }
 
 /* Controls Panel - Left side panel */
@@ -416,4 +417,99 @@ button:focus-visible {
 @keyframes fadein {
   from { opacity: 0; transform: translate(-50%, 10px); }
   to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Add this to your App.css file */
+.fullscreen-ad-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.fullscreen-ad-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: var(--radius-md);
+  position: relative;
+  max-width: 90%;
+}
+
+.close-ad-button {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* Add proper containers for ads to ensure they don't disrupt layout */
+.top-ad-container, .bottom-ad-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.side-ad-container {
+  margin-top: 15px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* On smaller screens, adjust ad sizes */
+@media (max-width: 768px) {
+  .top-ad-container, .bottom-ad-container {
+    margin: 10px auto;
+  }
+}
+
+/* Add this to your App.css file */
+.right-ad-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  width: 180px;
+  max-width: 180px;
+}
+
+.right-ad-container {
+  position: sticky;
+  top: 20px;
+  width: 100%;
+}
+
+/* Adjust the game layout to accommodate the new panel */
+.game-layout {
+  display: grid;
+  grid-template-columns: 270px 1fr 180px;
+  gap: var(--spacing-md);
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+/* Hide the right panel on smaller screens */
+@media (max-width: 1200px) {
+  .right-ad-panel {
+    display: none;
+  }
+  
+  .game-layout {
+    grid-template-columns: 270px 1fr;
+  }
 }

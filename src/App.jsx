@@ -8,6 +8,7 @@ import Timer from './components/Timer'
 import { generatePuzzle, generateKillerPuzzle } from './utils/SudokuGenerator'
 import { findNextHint, validatePuzzleState } from './utils/SudokuSolver'
 import KillerBoard from './components/KillerBoard'
+import AdComponent from './components/AdComponent'
 
 function App() {
   const [currentMode, setCurrentMode] = useState('classic')
@@ -55,6 +56,9 @@ function App() {
   
   // Add a new state for cages
   const [cages, setCages] = useState(null);
+  
+  // Add a new state for showing the completion ad
+  const [showCompletionAd, setShowCompletionAd] = useState(false);
   
   // Modify the useEffect to depend on refreshTrigger
   useEffect(() => {
@@ -382,6 +386,19 @@ function App() {
       isCompleted: true,
       score: calculateScore()
     }));
+    
+    // Set state to show ad
+    setShowCompletionAd(true);
+    
+    // Set timeout to hide ad after viewing (adjust time as needed)
+    setTimeout(() => {
+      setShowCompletionAd(false);
+      // Then show the completion modal
+      setGameState(prev => ({
+        ...prev,
+        isCompleted: true
+      }));
+    }, 7000); // Show ad for 7 seconds
   };
   
   // Calculate score based on difficulty, time and mistakes
@@ -656,6 +673,9 @@ function App() {
                 </span>
               </div>
             </div>
+            <div className="side-ad-container">
+              <AdComponent slot="0987654321" style={{ height: '250px', width: '300px', maxWidth: '100%', margin: '15px auto 0' }} />
+            </div>
           </div>
         </aside>
         
@@ -758,7 +778,39 @@ function App() {
             </div>
           )}
         </main>
+        
+        {/* New right-side ad container */}
+        <aside className="right-ad-panel">
+          <div className="right-ad-container">
+            <AdComponent 
+              slot="9988776655" 
+              style={{ height: '600px', width: '160px', maxWidth: '100%', margin: '0 auto' }} 
+            />
+          </div>
+        </aside>
       </div>
+      
+      <div className="bottom-ad-container">
+        <AdComponent slot="1122334455" style={{ height: '90px', width: '728px', maxWidth: '100%', margin: '20px auto' }} />
+      </div>
+      
+      {showCompletionAd && (
+        <div className="fullscreen-ad-overlay">
+          <div className="fullscreen-ad-container">
+            <button 
+              className="close-ad-button" 
+              onClick={() => setShowCompletionAd(false)}
+            >
+              Skip Ad
+            </button>
+            <AdComponent 
+              slot="5566778899" 
+              format="rectangle" 
+              style={{ width: '336px', height: '280px' }} 
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

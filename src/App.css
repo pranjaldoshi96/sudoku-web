@@ -122,6 +122,10 @@ h1 {
   color: var(--text-color);
   opacity: 0.8;
   font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
 
 /* Game play area container */
@@ -512,4 +516,11 @@ button:focus-visible {
   .game-layout {
     grid-template-columns: 270px 1fr;
   }
+}
+
+.timer-display {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-left: 15px;
+  color: #333;
 }

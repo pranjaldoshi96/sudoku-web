@@ -437,7 +437,7 @@ function App() {
       // Update game state
       setGameState(prev => ({
         ...prev,
-        mistakes: previousState.mistakes
+        mistakes: prev.mistakes // Keep the current mistake count
       }));
       
       // Update the history index
@@ -641,6 +641,35 @@ function App() {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  // Add a timer effect to track elapsed time
+  useEffect(() => {
+    let timerInterval = null;
+    
+    // Start the timer if the game is active and not completed or game over
+    if (gameState.isActive && !gameState.isCompleted && !gameState.isGameOver) {
+      timerInterval = setInterval(() => {
+        setGameState(prev => ({
+          ...prev,
+          elapsedTime: prev.elapsedTime + 1
+        }));
+      }, 1000);
+    }
+    
+    // Clean up interval on unmount or when game state changes
+    return () => {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+      }
+    };
+  }, [gameState.isActive, gameState.isCompleted, gameState.isGameOver]);
+
+  // Format time as MM:SS
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="app-container">
       <Navbar currentMode={currentMode} setCurrentMode={setCurrentMode} />
@@ -683,7 +712,10 @@ function App() {
         <main className="game-area">
           <div className="game-header">
             <h1>Sudoku - {currentMode.charAt(0).toUpperCase() + currentMode.slice(1)}</h1>
-            <div className="game-info">Difficulty: {currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1)}</div>
+            <div className="game-info">
+              <span>Difficulty: {currentDifficulty.charAt(0).toUpperCase() + currentDifficulty.slice(1)}</span>
+              <span className="timer-display">Time: {formatTime(gameState.elapsedTime)}</span>
+            </div>
           </div>
           
           <div className="game-play-area">
@@ -742,7 +774,7 @@ function App() {
           {gameState.isCompleted && (
             <div className="completion-message">
               <h2>Puzzle Completed!</h2>
-              <p>Time: {Math.floor(gameState.elapsedTime / 60)}:{(gameState.elapsedTime % 60).toString().padStart(2, '0')}</p>
+              <p>Time: {formatTime(gameState.elapsedTime)}</p>
               <p>Mistakes: {gameState.mistakes}/3</p>
               <p>Hints used: {3 - gameState.hintsRemaining}/3</p>
               <div className="completion-actions">
@@ -756,7 +788,7 @@ function App() {
             <div className="completion-message game-over">
               <h2>Game Over!</h2>
               <p>You've made 3 mistakes</p>
-              <p>Time: {Math.floor(gameState.elapsedTime / 60)}:{(gameState.elapsedTime % 60).toString().padStart(2, '0')}</p>
+              <p>Time: {formatTime(gameState.elapsedTime)}</p>
               <div className="completion-actions">
                 <button onClick={handleNewGame}>New Game</button>
                 <button onClick={handleReset}>Try Again</button>

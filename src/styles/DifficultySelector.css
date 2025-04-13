@@ -1,0 +1,84 @@
+.difficulty-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0;
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.difficulty-title {
+  font-size: 1.1rem;
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+  color: #000;
+  white-space: nowrap;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.difficulty-title:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background-color: #000;
+}
+
+.difficulty-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  width: 100%;
+}
+
+.difficulty-button {
+  background-color: transparent;
+  color: #000;
+  border: 1px solid #000;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  text-decoration: none;
+  outline: none;
+  margin: 0;
+  font-size: 0.9rem;
+  text-align: left;
+  width: 100%;
+}
+
+.difficulty-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.difficulty-button:focus,
+.difficulty-button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.difficulty-button.active {
+  background-color: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+@media (max-width: 600px) {
+  .difficulty-options {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  
+  .difficulty-button {
+    width: auto;
+  }
+} 

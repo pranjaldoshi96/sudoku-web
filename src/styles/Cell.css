@@ -1,0 +1,197 @@
+.cell {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--text-color);
+  background-color: white;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.cell:hover:not(.initial) {
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+/* Initial values provided by the puzzle */
+.cell.initial {
+  font-weight: 700;
+  color: var(--secondary-color);
+  cursor: default;
+}
+
+/* Selected cell styling */
+.cell.selected {
+  background-color: rgba(52, 152, 219, 0.2);
+  border: 2px solid var(--primary-color);
+  box-shadow: inset 0 0 0 1px var(--primary-color);
+}
+
+/* Thicker borders for 3x3 subgrids */
+.cell.right-border {
+  border-right: 2px solid var(--secondary-color);
+}
+
+.cell.bottom-border {
+  border-bottom: 2px solid var(--secondary-color);
+}
+
+/* Add styling for user-entered values */
+.cell.user-entry {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Add styling for incorrect entries */
+.cell.incorrect {
+  color: var(--accent-color);
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+.cell.incorrect.selected {
+  background-color: rgba(231, 76, 60, 0.2);
+  border-color: var(--accent-color);
+  box-shadow: inset 0 0 0 1px var(--accent-color);
+}
+
+/* Media query for better mobile experience */
+@media (max-width: 480px) {
+  .cell {
+    font-size: 0.9rem;
+  }
+}
+
+/* Styling for the clear button in cells */
+.cell-clear-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  border-radius: 50%;
+  background-color: rgba(231, 76, 60, 0.1);
+  color: var(--accent-color);
+  border: none;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cell:hover .cell-clear-btn {
+  display: flex;
+}
+
+.cell-clear-btn:hover {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+/* Make sure the cell is relatively positioned for absolute positioning of the button */
+.cell {
+  position: relative;
+}
+
+/* Styling for hint cells */
+.cell.hint {
+  color: #27ae60;  /* A nice medium green */
+  background-color: rgba(39, 174, 96, 0.1);  /* Light green background */
+  font-weight: 600;
+}
+
+.cell.hint.selected {
+  background-color: rgba(39, 174, 96, 0.2);  /* Slightly darker green when selected */
+  border-color: #27ae60;
+}
+
+/* Add a subtle indicator to show it's a hint */
+.cell.hint::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #27ae60;
+}
+
+/* Styling for highlighted cells */
+.cell.highlight-number {
+  background-color: rgba(52, 152, 219, 0.3);  /* Stronger blue for same numbers */
+}
+
+.cell.highlight-row {
+  background-color: rgba(52, 152, 219, 0.1);  /* Light blue for rows */
+}
+
+.cell.highlight-column {
+  background-color: rgba(52, 152, 219, 0.1);  /* Light blue for columns */
+}
+
+.cell.highlight-box {
+  background-color: rgba(52, 152, 219, 0.15);  /* Medium blue for box */
+}
+
+/* Priority ordering for multiple highlights */
+.cell.highlight-number.highlight-row,
+.cell.highlight-number.highlight-column,
+.cell.highlight-number.highlight-box {
+  background-color: rgba(52, 152, 219, 0.35);  /* Darker blue for overlaps */
+}
+
+.cell.highlight-row.highlight-column,
+.cell.highlight-row.highlight-box,
+.cell.highlight-column.highlight-box {
+  background-color: rgba(52, 152, 219, 0.2);  /* Medium blue for overlaps */
+}
+
+.cell.highlight-row.highlight-column.highlight-box {
+  background-color: rgba(52, 152, 219, 0.25);  /* Darker for triple overlap */
+}
+
+.cell.initial.highlight-number {
+  background-color: rgba(44, 62, 80, 0.15);  /* Darker highlight for initial numbers */
+}
+
+/* Styling for notes */
+.notes-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+  font-size: 0.5rem;
+  gap: 0;
+}
+
+.note-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #666;
+}
+
+.note-item.has-note {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+/* Highlighted number in notes */
+.cell.highlight-number .note-item.has-note {
+  color: var(--primary-color);
+  font-weight: 700;
+  background-color: rgba(52, 152, 219, 0.1);
+} 

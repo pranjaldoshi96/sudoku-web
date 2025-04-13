@@ -1,0 +1,330 @@
+.number-pad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-left: var(--spacing-md);
+  width: 140px;
+  height: 520px;
+  justify-content: flex-start;
+  padding: var(--spacing-md);
+  background-color: var(--panel-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.control-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.control-button {
+  background-color: #f5f7fa;
+  color: var(--secondary-color);
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  transition: all 0.2s ease;
+}
+
+.control-button:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+  border-color: var(--primary-color);
+}
+
+.control-button svg {
+  width: 22px;
+  height: 22px;
+}
+
+.control-button.reset-button {
+  color: var(--accent-color);
+}
+
+.control-button.reset-button:hover {
+  background-color: rgba(231, 76, 60, 0.1);
+  border-color: var(--accent-color);
+}
+
+.number-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
+.number-button {
+  position: relative;
+  background-color: #f5f7fa;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding: 0;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 1.4rem;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.number-value {
+  display: block;
+  line-height: 1;
+}
+
+.number-count {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  font-size: 0.65rem;
+  font-weight: normal;
+  color: #666;
+  background-color: rgba(0, 0, 0, 0.05);
+  min-width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.number-completed {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #fff;
+  background-color: var(--success-color);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Style for completed numbers */
+.number-button.completed {
+  opacity: 0.7;
+  background-color: #f0f0f0;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.number-button.completed:hover {
+  background-color: #f0f0f0;
+  border-color: var(--border-color);
+  cursor: not-allowed;
+}
+
+.number-button.completed.selected {
+  background-color: #f0f0f0;
+  border-color: var(--border-color);
+}
+
+/* Selected state for when a number is actively being used */
+.number-button.selected {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* Add styling for the reset button at the bottom */
+.number-pad .reset-button {
+  width: 100%;
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background-color: #f8f9fa;
+  color: var(--accent-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.number-pad .reset-button:hover {
+  background-color: rgba(231, 76, 60, 0.1);
+  border-color: var(--accent-color);
+}
+
+/* Disabled state for buttons */
+.control-button.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.control-button.disabled:hover {
+  background-color: #f5f7fa;
+  border-color: var(--border-color);
+}
+
+@media (max-width: 768px) {
+  .number-pad {
+    flex-direction: row;
+    width: 520px;
+    height: auto;
+    margin-left: 0;
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-md);
+  }
+  
+  .control-buttons {
+    margin-bottom: 0;
+    margin-right: var(--spacing-md);
+  }
+  
+  .number-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: 0;
+  }
+  
+  .number-button {
+    flex: 1;
+    min-width: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .control-button, .number-button {
+    height: 36px;
+    min-width: 36px;
+  }
+  
+  .number-button {
+    font-size: 1.2rem;
+  }
+}
+
+/* Hint section */
+.hint-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.hint-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--spacing-sm);
+  background-color: #f0f7ff;
+  border: 1px solid var(--primary-color);
+  border-radius: var(--radius-sm);
+  color: var(--secondary-color);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.hint-button:not(.disabled):hover {
+  background-color: rgba(52, 152, 219, 0.2);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.hint-icon {
+  font-size: 1.2rem;
+  color: var(--primary-color);
+}
+
+.hint-text {
+  font-size: 0.95rem;
+}
+
+.hints-remaining {
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.hint-button.disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.hint-button.disabled .hints-remaining {
+  background-color: #cbd5e0;
+}
+
+.hint-button.disabled:hover {
+  background-color: #f5f7fa;
+  border-color: var(--border-color);
+}
+
+/* Note mode section */
+.note-mode-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.note-mode-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--spacing-sm);
+  background-color: #f8f9fa;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--secondary-color);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.note-mode-button:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+  border-color: var(--primary-color);
+}
+
+.note-mode-button.active {
+  background-color: rgba(52, 152, 219, 0.15);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.note-icon {
+  font-size: 1.2rem;
+}
+
+.note-text {
+  font-size: 0.95rem;
+}
+
+.note-indicator {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.note-indicator.off {
+  background-color: #e1e4e8;
+  color: #666;
+}
+
+.note-indicator.on {
+  background-color: var(--primary-color);
+  color: white;
+} 

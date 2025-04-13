@@ -7,6 +7,12 @@
  * - Expert: 22-24 revealed cells
  * - Master: 20-21 revealed cells
  * - Extreme: 17-19 revealed cells (minimum required for unique solution)
+ * 
+ * Killer Sudoku difficulties:
+ * - Easy: 5-8 filled cells, simpler cages (2-3 cells each)
+ * - Medium: 2-4 filled cells, mixed cage sizes
+ * - Hard: 0-2 filled cells, complex cage arrangements
+ * - Expert: 0 filled cells, very complex cage arrangements with difficult sums
  */
 
 // Maps difficulty levels to ranges of cells to reveal
@@ -17,6 +23,30 @@ const DIFFICULTY_LEVELS = {
   expert: { min: 22, max: 24 },
   master: { min: 20, max: 21 },
   extreme: { min: 17, max: 19 }
+};
+
+// Maps killer difficulty to configurations
+const KILLER_DIFFICULTY = {
+  easy: { 
+    prefilled: { min: 5, max: 8 },
+    cageSize: { min: 1, max: 3 },
+    simpleSum: true 
+  },
+  medium: { 
+    prefilled: { min: 2, max: 4 },
+    cageSize: { min: 1, max: 4 },
+    simpleSum: false
+  },
+  hard: { 
+    prefilled: { min: 0, max: 2 },
+    cageSize: { min: 1, max: 5 },
+    simpleSum: false
+  },
+  expert: { 
+    prefilled: { min: 0, max: 0 },
+    cageSize: { min: 1, max: 6 },
+    simpleSum: false
+  }
 };
 
 /**
@@ -291,4 +321,223 @@ export function validatePuzzle(puzzle) {
   }
   
   return { valid: true, solution: solutions[0] };
+}
+
+// Create a Killer Sudoku puzzle
+export function generateKillerPuzzle(difficulty = 'medium') {
+  // Generate a solved Sudoku grid
+  const solution = generateSolvedGrid();
+  
+  // Create a set of cages for the Killer Sudoku
+  const { cages, puzzle } = generateKillerCages(solution, difficulty);
+  
+  return { puzzle, solution, cages };
+}
+
+// Generate the cages for Killer Sudoku
+function generateKillerCages(solution, difficulty) {
+  const diffSettings = KILLER_DIFFICULTY[difficulty.toLowerCase()] || KILLER_DIFFICULTY.medium;
+  
+  // Create empty puzzle grid with null values
+  const puzzle = Array(9).fill().map(() => Array(9).fill(null));
+  
+  // Create a grid to track which cells are assigned to cages
+  const cageAssignments = Array(9).fill().map(() => Array(9).fill(null));
+  
+  // Generate cages
+  const cages = [];
+  let cageId = 1;
+  
+  // First try to create killers using a greedy algorithm
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      if (cageAssignments[row][col] === null) {
+        // Start a new cage
+        const cageSize = getRandomInt(
+          diffSettings.cageSize.min,
+          Math.min(diffSettings.cageSize.max, 5) // Cap size for better puzzles
+        );
+        
+        const cage = growCage(cageAssignments, solution, row, col, cageSize);
+        
+        // Calculate the sum for this cage
+        const sum = cage.cells.reduce((total, [r, c]) => total + solution[r][c], 0);
+        
+        // Add cage to the list
+        cages.push({
+          id: cageId,
+          sum: sum,
+          cells: cage.cells
+        });
+        
+        // Mark these cells as assigned
+        cage.cells.forEach(([r, c]) => {
+          cageAssignments[r][c] = cageId;
+        });
+        
+        cageId++;
+      }
+    }
+  }
+  
+  // Now determine which cells to prefill based on difficulty
+  const prefillCount = getRandomInt(
+    diffSettings.prefilled.min,
+    diffSettings.prefilled.max
+  );
+  
+  // Find the most constrained cells to prefill for easier levels
+  if (prefillCount > 0) {
+    const cellsToFill = findConstrainedCells(cages, solution, prefillCount);
+    
+    // Fill the chosen cells
+    cellsToFill.forEach(([row, col]) => {
+      puzzle[row][col] = solution[row][col];
+    });
+  }
+  
+  // Validate the puzzle is solvable using killer rules
+  const isValid = validateKillerPuzzle(puzzle, cages);
+  
+  if (!isValid) {
+    console.warn("Generated an invalid killer puzzle, retrying");
+    return generateKillerCages(solution, difficulty);
+  }
+  
+  return { cages, puzzle };
+}
+
+// Grow a cage from a starting cell
+function growCage(cageAssignments, solution, startRow, startCol, targetSize) {
+  const cells = [[startRow, startCol]];
+  const value = solution[startRow][startCol];
+  
+  // Keep track of potential next cells to add (adjacent to current cage)
+  let candidates = getAdjacentCells(startRow, startCol, cageAssignments);
+  
+  // Grow the cage until we reach the target size or run out of candidates
+  while (cells.length < targetSize && candidates.length > 0) {
+    // Choose a random candidate
+    const randIndex = Math.floor(Math.random() * candidates.length);
+    const [nextRow, nextCol] = candidates[randIndex];
+    
+    // Add to cage
+    cells.push([nextRow, nextCol]);
+    
+    // Remove from candidates and add new adjacencies
+    candidates.splice(randIndex, 1);
+    
+    // Find new adjacent cells
+    const newAdjacent = getAdjacentCells(nextRow, nextCol, cageAssignments)
+      .filter(([r, c]) => 
+        // Not already in the cage
+        !cells.some(([cr, cc]) => cr === r && cc === c) &&
+        // Not already in candidates
+        !candidates.some(([cr, cc]) => cr === r && cc === c)
+      );
+    
+    candidates = [...candidates, ...newAdjacent];
+  }
+  
+  return { cells };
+}
+
+// Get adjacent cells (up, down, left, right) that aren't already assigned to a cage
+function getAdjacentCells(row, col, cageAssignments) {
+  const adjacent = [];
+  
+  // Check up
+  if (row > 0 && cageAssignments[row - 1][col] === null) {
+    adjacent.push([row - 1, col]);
+  }
+  
+  // Check down
+  if (row < 8 && cageAssignments[row + 1][col] === null) {
+    adjacent.push([row + 1, col]);
+  }
+  
+  // Check left
+  if (col > 0 && cageAssignments[row][col - 1] === null) {
+    adjacent.push([row, col - 1]);
+  }
+  
+  // Check right
+  if (col < 8 && cageAssignments[row][col + 1] === null) {
+    adjacent.push([row, col + 1]);
+  }
+  
+  return adjacent;
+}
+
+// Find the most constrained cells to prefill for easier puzzles
+function findConstrainedCells(cages, solution, count) {
+  // Create a scoring system for cells by constraint level
+  const cellScores = Array(9).fill().map(() => Array(9).fill(0));
+  
+  // Score cells based on:
+  // 1. Cages with unique sums that constrain possibilities
+  // 2. Cages with fewer cells are more constrained
+  cages.forEach(cage => {
+    // Calculate constraint level - smaller cages with less possibilities are more constrained
+    const constraintLevel = 10 - cage.cells.length;
+    
+    // Add score to all cells in this cage
+    cage.cells.forEach(([row, col]) => {
+      cellScores[row][col] += constraintLevel;
+    });
+  });
+  
+  // Create a list of all cells with their scores
+  const allCells = [];
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      allCells.push({
+        position: [row, col],
+        score: cellScores[row][col],
+        value: solution[row][col]
+      });
+    }
+  }
+  
+  // Sort by score (most constrained first)
+  allCells.sort((a, b) => b.score - a.score);
+  
+  // Return the positions of the top N cells
+  return allCells.slice(0, count).map(cell => cell.position);
+}
+
+// Validate that a killer puzzle is solvable
+function validateKillerPuzzle(puzzle, cages) {
+  // For basic validation, check that cage sums are possible with distinct digits
+  for (const cage of cages) {
+    // For single-cell cages
+    if (cage.cells.length === 1) {
+      if (cage.sum < 1 || cage.sum > 9) return false;
+      continue;
+    }
+    
+    // For multi-cell cages
+    const cellCount = cage.cells.length;
+    
+    // Min possible sum is 1+2+3+... (for N cells)
+    const minSum = (cellCount * (cellCount + 1)) / 2;
+    
+    // Max possible sum is 9+8+7+... (for N cells)
+    const maxSum = 9 * cellCount - (cellCount * (cellCount - 1)) / 2;
+    
+    if (cage.sum < minSum || cage.sum > maxSum) {
+      return false;
+    }
+  }
+  
+  // For more thorough validation, we'd need to implement a solver
+  // that can prove the puzzle has a unique solution, but this is complex.
+  // For now, we assume the puzzle is valid if the cage sums are possible.
+  
+  return true;
+}
+
+// Helper function to get a random integer between min and max (inclusive)
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 } 

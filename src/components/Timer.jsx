@@ -1,34 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Timer.css';
 
-function Timer({ isRunning, onTimeUpdate }) {
+function Timer({ isRunning, onTimeUpdate, gameId }) {
+  // Store seconds in state
   const [seconds, setSeconds] = useState(0);
   
+  // Reset timer when gameId changes
   useEffect(() => {
-    let interval = null;
+    console.log('Timer reset due to gameId change');
+    setSeconds(0);
+    if (onTimeUpdate) onTimeUpdate(0);
+  }, [gameId, onTimeUpdate]);
+  
+  // Handle timer running state
+  useEffect(() => {
+    console.log('Timer running state changed:', isRunning);
+    let timerInterval = null;
     
     if (isRunning) {
-      interval = setInterval(() => {
-        setSeconds(prevSeconds => {
-          const newSeconds = prevSeconds + 1;
-          if (onTimeUpdate) onTimeUpdate(newSeconds);
-          return newSeconds;
+      timerInterval = setInterval(() => {
+        setSeconds(prev => {
+          const newValue = prev + 1;
+          if (onTimeUpdate) onTimeUpdate(newValue);
+          return newValue;
         });
       }, 1000);
-    } else if (interval) {
-      clearInterval(interval);
+      
+      console.log('Timer started');
     }
     
+    // Cleanup function
     return () => {
-      if (interval) clearInterval(interval);
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        console.log('Timer interval cleared');
+      }
     };
   }, [isRunning, onTimeUpdate]);
   
   // Format time as mm:ss
   const formatTime = (totalSeconds) => {
     const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const remainingSeconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
   
   return (

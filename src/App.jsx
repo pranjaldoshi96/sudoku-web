@@ -5,8 +5,9 @@ import DifficultySelector from './components/DifficultySelector'
 import Board from './components/Board'
 import NumberPad from './components/NumberPad'
 import Timer from './components/Timer'
-import { generatePuzzle } from './utils/SudokuGenerator'
+import { generatePuzzle, generateKillerPuzzle } from './utils/SudokuGenerator'
 import { findNextHint, validatePuzzleState } from './utils/SudokuSolver'
+import KillerBoard from './components/KillerBoard'
 
 function App() {
   const [currentMode, setCurrentMode] = useState('classic')
@@ -51,6 +52,9 @@ function App() {
   
   // Add a refresh trigger state
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  // Add a new state for cages
+  const [cages, setCages] = useState(null);
   
   // Modify the useEffect to depend on refreshTrigger
   useEffect(() => {
@@ -108,6 +112,59 @@ function App() {
       // Reset notes
       const emptyNotes = Array(9).fill().map(() => Array(9).fill().map(() => []));
       setNotes(emptyNotes);
+    } 
+    else if (currentMode === 'killer') {
+      // Try to generate a valid killer puzzle, with retries if needed
+      let attempts = 0;
+      let validPuzzle = false;
+      let puzzleData = { puzzle: null, solution: null, cages: null };
+      
+      while (!validPuzzle && attempts < 5) {
+        puzzleData = generateKillerPuzzle(currentDifficulty.toLowerCase());
+        
+        // Basic validation
+        if (puzzleData.puzzle && puzzleData.solution && puzzleData.cages) {
+          validPuzzle = true;
+        } else {
+          attempts++;
+          console.warn(`Generated an invalid killer puzzle, retrying (attempt ${attempts})`);
+        }
+      }
+      
+      setPuzzle(puzzleData.puzzle);
+      setSolution(puzzleData.solution);
+      setCages(puzzleData.cages);
+      
+      // Initialize user entries grid with nulls
+      const entries = Array(9).fill().map(() => Array(9).fill(null));
+      setUserEntries(entries);
+      
+      // Reset selected cell and number
+      setSelectedCell(null);
+      setSelectedNumber(null);
+      setIncorrectCells([]);
+      
+      // Reset hint cells and message
+      setHintCells([]);
+      setHintMessage('');
+      
+      // Reset game state
+      setGameState({
+        isActive: true,
+        isCompleted: false,
+        isGameOver: false,
+        elapsedTime: 0,
+        mistakes: 0,
+        hintsRemaining: 3
+      });
+      
+      // Reset history
+      setHistory([]);
+      setHistoryIndex(-1);
+      
+      // Reset notes
+      const emptyNotes = Array(9).fill().map(() => Array(9).fill().map(() => []));
+      setNotes(emptyNotes);
     }
   }, [currentMode, currentDifficulty, refreshTrigger]); // Add refreshTrigger as a dependency
   
@@ -120,14 +177,6 @@ function App() {
       setCurrentDifficulty('easy')
     }
   }, [currentMode])
-
-  // Handle time updates from the timer
-  const handleTimeUpdate = (seconds) => {
-    setGameState(prev => ({
-      ...prev,
-      elapsedTime: seconds
-    }));
-  };
 
   // Handle number selection from number pad
   const handleNumberSelect = (number) => {
@@ -594,10 +643,6 @@ function App() {
           <div className="panel-section">
             <h2 className="section-title">Statistics</h2>
             <div className="stats-container">
-              <Timer 
-                isRunning={gameState.isActive && !gameState.isCompleted && !gameState.isGameOver}
-                onTimeUpdate={handleTimeUpdate}
-              />
               <div className="mistakes-display">
                 <span className="mistakes-label">Mistakes:</span>
                 <span className={`mistakes-value ${gameState.mistakes > 0 ? 'has-mistakes' : ''}`}>
@@ -636,12 +681,26 @@ function App() {
                   onCellSelect={handleCellSelect}
                   onClearCell={handleClearCell}
                 />
+              ) : currentMode === 'killer' && puzzle && userEntries ? (
+                <KillerBoard 
+                  puzzle={puzzle}
+                  userEntries={userEntries}
+                  cages={cages}
+                  selectedNumber={selectedNumber}
+                  selectedCell={selectedCell}
+                  incorrectCells={incorrectCells}
+                  hintCells={hintCells}
+                  notes={notes}
+                  highlightedNumber={highlightedNumber}
+                  onCellSelect={handleCellSelect}
+                  onClearCell={handleClearCell}
+                />
               ) : (
                 <p>Game board for {currentMode} mode at {currentDifficulty} difficulty</p>
               )}
             </div>
             
-            {currentMode === 'classic' && (
+            {(currentMode === 'classic' || currentMode === 'killer') && (
               <NumberPad 
                 onNumberSelect={handleNumberSelect}
                 onErase={handleErase}

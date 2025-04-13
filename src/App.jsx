@@ -422,17 +422,43 @@ function App() {
   
   // Handle Undo action
   const handleUndo = () => {
-    if (historyIndex > 0) {
+    // The issue is in this condition - we're only undoing if historyIndex > 0
+    // but we need to undo when there's at least one item in history
+    if (historyIndex >= 0) {  // Changed from historyIndex > 0
       // Go back one step in history
       const newIndex = historyIndex - 1;
-      const previousState = history[newIndex];
       
-      // Restore the state
-      setUserEntries(previousState.entries.map(row => [...row]));
-      setIncorrectCells(previousState.incorrectCells.map(cell => [...cell]));
-      setHintCells(previousState.hintCells.map(cell => [...cell]));
-      setNotes(previousState.notes.map(row => row.map(cellNotes => [...cellNotes])));
-      setNumberCounts(previousState.numberCounts);
+      // If we're at the first item, we need special handling
+      if (newIndex < 0) {
+        // When undoing the first action, we need to handle it specially
+        // We can either:
+        // 1. Reset to initial state
+        // 2. Stay at the first history item but perform special actions
+        // Let's do #1 for simplicity
+        
+        const emptyEntries = Array(9).fill().map(() => Array(9).fill(null));
+        setUserEntries(emptyEntries);
+        setIncorrectCells([]);
+        setHintCells([]);
+        
+        // Reset notes
+        const emptyNotes = Array(9).fill().map(() => Array(9).fill().map(() => []));
+        setNotes(emptyNotes);
+        
+        // Keep the current mistake count
+        // Update counts to only include puzzle numbers
+        updateNumberCounts(puzzle, emptyEntries);
+      } else {
+        // Normal undo operation for historyIndex > 0
+        const previousState = history[newIndex];
+        
+        // Restore the state
+        setUserEntries(previousState.entries.map(row => [...row]));
+        setIncorrectCells(previousState.incorrectCells.map(cell => [...cell]));
+        setHintCells(previousState.hintCells.map(cell => [...cell]));
+        setNotes(previousState.notes.map(row => row.map(cellNotes => [...cellNotes])));
+        setNumberCounts(previousState.numberCounts);
+      }
       
       // Update game state
       setGameState(prev => ({
@@ -542,6 +568,16 @@ function App() {
     // Check if hints are available
     if (gameState.hintsRemaining <= 0) {
       console.log("No hints remaining");
+      setHintMessage("No hints remaining");
+      setTimeout(() => setHintMessage(''), 3000);
+      return;
+    }
+    
+    // Check if a cell is selected
+    if (!selectedCell) {
+      console.log("No cell selected");
+      setHintMessage("Select a cell first to get a hint");
+      setTimeout(() => setHintMessage(''), 3000);
       return;
     }
     
@@ -551,38 +587,49 @@ function App() {
       return;
     }
     
-    // Find the next logical hint
-    const hint = findNextHint(puzzle, userEntries, solution);
+    const [row, col] = selectedCell;
     
-    if (!hint) {
-      console.log("No logical next move found");
+    // Don't provide hint for cells that were part of the initial puzzle
+    if (puzzle[row][col] !== null) {
+      setHintMessage("This cell is already filled");
+      setTimeout(() => setHintMessage(''), 3000);
       return;
     }
     
-    console.log(`Providing hint: ${hint.strategy}`);
+    // Don't provide hint if the cell already has the correct value
+    if (userEntries[row][col] === solution[row][col]) {
+      setHintMessage("This cell is already correct");
+      setTimeout(() => setHintMessage(''), 3000);
+      return;
+    }
     
-    // Select the cell for the user
-    setSelectedCell([hint.row, hint.col]);
+    // Get the correct value from the solution
+    const correctValue = solution[row][col];
     
     // Create a copy of the user entries and update with the hint value
-    const newEntries = userEntries.map(row => [...row]);
-    newEntries[hint.row][hint.col] = hint.value;
+    const newEntries = userEntries.map(r => [...r]);
+    newEntries[row][col] = correctValue;
     
     // Track this cell as a hint cell
-    const newHintCells = [...hintCells, [hint.row, hint.col]];
+    const newHintCells = [...hintCells, [row, col]];
     setHintCells(newHintCells);
+    
+    // Clear any notes for this cell
+    const newNotes = [...notes];
+    newNotes[row][col] = [];
+    setNotes(newNotes);
     
     // Create a snapshot for history
     saveToHistory(
-      newEntries, 
-      gameState.mistakes, 
+      newEntries,
+      gameState.mistakes,
       incorrectCells,
-      notes
+      newNotes
     );
     
-    // Show hint strategy in a non-intrusive way (using the helper text)
-    setHintMessage(hint.strategy);
-    setTimeout(() => setHintMessage(''), 5000); // Clear after 5 seconds
+    // Show hint message
+    setHintMessage(`Revealed value: ${correctValue}`);
+    setTimeout(() => setHintMessage(''), 3000);
     
     // Update the state
     setUserEntries(newEntries);
@@ -593,6 +640,11 @@ function App() {
     
     // Check if the puzzle is now completed
     checkCompletion(newEntries);
+    
+    // Update number counts
+    const newCounts = [...numberCounts];
+    newCounts[correctValue]--;
+    setNumberCounts(newCounts);
   };
 
   // Add a toggle function for note mode
